@@ -200,6 +200,12 @@ Open browser:
 
 http://127.0.0.1:5000
 
+---
+
+screenhots:
+
+for screenshots of our ui please refer to screenshots folder
+
 
 ---
 
