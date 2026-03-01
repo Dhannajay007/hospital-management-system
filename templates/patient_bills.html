@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card shadow p-4">
+    <h3 class="mb-4">My Bills 💰</h3>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Bill ID</th>
+                    <th>Appointment ID</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th width="150">Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for b in bills %}
+                <tr>
+                    <td>{{ b[0] }}</td>
+                    <td>{{ b[1] }}</td>
+                    <td>₹ {{ b[2] }}</td>
+
+                    <td>
+                        {% if b[3] == "Paid" %}
+                            <span class="badge bg-success">Paid</span>
+                        {% else %}
+                            <span class="badge bg-danger">Unpaid</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if b[3] == "Unpaid" %}
+                            <a href="/pay_bill/{{ b[0] }}"
+                               class="btn btn-sm btn-primary"
+                               onclick="return confirmAction('Confirm payment?')">
+                               Pay
+                            </a>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

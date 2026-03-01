@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card shadow p-4">
+    <h3 class="mb-3">Receptionist Dashboard 🧾</h3>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <tr>
+                <th>ID</th>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Date</th>
+                <th>Appointment Status</th>
+                <th>Bill Status</th>
+                <th>Action</th>
+            </tr>
+
+            {% for a in appointments %}
+            <tr>
+                <td>{{ a[0] }}</td>
+                <td>{{ a[1] }}</td>
+                <td>{{ a[2] }}</td>
+                <td>{{ a[3] }}</td>
+                <td>{{ a[4] }}</td>
+
+                <td>
+                    {% if a[6] %}
+                        <span class="badge bg-success">{{ a[6] }}</span>
+                    {% else %}
+                        <span class="badge bg-secondary">No Bill</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if not a[5] %}
+                        <a href="/generate_bill/{{ a[0] }}/{{ a[1] }}"
+                           class="btn btn-sm btn-primary"
+                           onclick="return confirmAction('Generate bill for this appointment?')">
+                           Generate
+                        </a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+{% endblock %}

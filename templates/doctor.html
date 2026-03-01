@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card shadow p-4">
+    <h3 class="mb-3">Doctor Dashboard 👨‍⚕️</h3>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Patient</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th width="250">Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for app in appointments %}
+                <tr>
+                    <td>{{ app[0] }}</td>
+                    <td>{{ app[1] }}</td>
+                    <td>{{ app[2] }}</td>
+
+                    <td>
+                        {% if app[3] == "Pending" %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% elif app[3] == "Accepted" %}
+                            <span class="badge bg-success">Accepted</span>
+                        {% elif app[3] == "Rejected" %}
+                            <span class="badge bg-danger">Rejected</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ app[3] }}</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if app[3] == "Pending" %}
+                            <a href="/update_status/{{ app[0] }}/Accepted"
+                               class="btn btn-sm btn-success"
+                               onclick="return confirmAction('Accept this appointment?')">
+                               Accept
+                            </a>
+
+                            <a href="/update_status/{{ app[0] }}/Rejected"
+                               class="btn btn-sm btn-danger"
+                               onclick="return confirmAction('Reject this appointment?')">
+                               Reject
+                            </a>
+                        {% endif %}
+
+                        <a href="/add_prescription/{{ app[0] }}"
+                           class="btn btn-sm btn-primary">
+                           Add Prescription
+                        </a>
+                    </td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card shadow p-4">
+    <h3 class="mb-3">Admin Dashboard 👑</h3>
+
+    <h5>Add New User</h5>
+    <form method="POST" action="/add_user" class="row g-3">
+
+        <div class="col-md-3">
+            <input type="text" name="name" class="form-control" placeholder="Name" required>
+        </div>
+
+        <div class="col-md-3">
+            <input type="email" name="email" class="form-control" placeholder="Email" required>
+        </div>
+
+        <div class="col-md-3">
+            <input type="password" name="password" class="form-control" placeholder="Password" required>
+        </div>
+
+        <div class="col-md-2">
+            <select name="role" class="form-select" required>
+                <option value="">Select Role</option>
+                <option value="doctor">Doctor</option>
+                <option value="patient">Patient</option>
+                <option value="receptionist">Receptionist</option>
+                <option value="pharmacist">Pharmacist</option>
+            </select>
+        </div>
+
+        <div class="col-md-1">
+            <button type="submit" class="btn btn-primary w-100">Add</button>
+        </div>
+
+    </form>
+
+    <hr>
+
+    <h5>All Users</h5>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Action</th>
+            </tr>
+
+            {% for user in users %}
+            <tr>
+                <td>{{ user[0] }}</td>
+                <td>{{ user[1] }}</td>
+                <td>{{ user[2] }}</td>
+                <td>
+                    <span class="badge bg-info">{{ user[3] }}</span>
+                </td>
+                <td>
+                    <a href="/delete_user/{{ user[0] }}"
+                       class="btn btn-sm btn-danger"
+                       onclick="return confirmAction('Delete this user?')">
+                       Delete
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}
