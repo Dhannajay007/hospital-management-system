@@ -91,28 +91,6 @@ Update medicine stock
 Track dispensed status
 
 
-
----
-
-🗂️ Project Structure
-
-hospital_management/
-│
-├── app.py
-├── templates/
-│   ├── login.html
-│   ├── admin.html
-│   ├── doctor.html
-│   ├── patient.html
-│   ├── receptionist.html
-│   ├── pharmacist.html
-│   ├── add_prescription.html
-│   ├── patient_prescriptions.html
-│   └── patient_bills.html
-│
-└── venv/
-
-
 ---
 
 🗄️ Database
