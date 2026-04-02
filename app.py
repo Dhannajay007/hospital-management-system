@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, session
 from flask_mysqldb import MySQL
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"
+app.secret_key = "supersecret key"
 
 # MySQL Configuration
 app.config['MYSQL_HOST'] = 'localhost'
@@ -18,7 +18,6 @@ mysql = MySQL(app)
 @app.route("/")
 def home():
     return render_template("login.html")
-
 
 # ------------------------
 # 2️⃣ LOGIN FUNCTION
@@ -53,15 +52,45 @@ def login():
         return "Invalid Login"
 
 
-# ------------------------
-# 3️⃣ 👉 PLACE STEP 4 HERE
-# ------------------------
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        password = request.form['password']
+        role = request.form['role']
+
+        cur = mysql.connection.cursor()
+
+        cur.execute(
+            "INSERT INTO users (name, email, password, role) VALUES (%s, %s, %s, %s)",
+            (name, email, password, role)
+        )
+
+        mysql.connection.commit()
+        cur.close()
+
+        return redirect('/')
+
+    return render_template('signup.html')
+
 @app.route("/admin")
 def admin_dashboard():
     if "user" in session and session["role"] == "admin":
 
+        search = request.args.get("search")
+
         cur = mysql.connection.cursor()
-        cur.execute("SELECT id, name, email, role FROM users")
+
+        if search:
+            query = """
+                SELECT * FROM users
+                WHERE name LIKE %s OR email LIKE %s
+            """
+            cur.execute(query, ('%' + search + '%', '%' + search + '%'))
+        else:
+            cur.execute("SELECT * FROM users")
+
         users = cur.fetchall()
         cur.close()
 
@@ -170,12 +199,12 @@ def delete_user(user_id):
         cur.close()
 
         return redirect("/admin")
-
+ 
     else:
         return redirect("/")
 
 @app.route("/update_status/<int:appointment_id>/<string:new_status>")
-def update_status(appointment_id, new_status):
+def update_status(appointment_id, new_status):  
 
     if "user" in session and session["role"] == "doctor":
 
