@@ -74,51 +74,155 @@ def signup():
 
     return render_template('signup.html')
 
-@app.route("/admin")
-def admin_dashboard():
-    if "user" in session and session["role"] == "admin":
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    cur = mysql.connection.cursor()
 
-        search = request.args.get("search")
+    search = request.args.get('search')
 
-        cur = mysql.connection.cursor()
-
-        if search:
-            query = """
-                SELECT * FROM users
-                WHERE name LIKE %s OR email LIKE %s
-            """
-            cur.execute(query, ('%' + search + '%', '%' + search + '%'))
-        else:
-            cur.execute("SELECT * FROM users")
-
-        users = cur.fetchall()
-        cur.close()
-
-        return render_template("admin.html", users=users)
-
+    if search:
+        cur.execute("SELECT * FROM users WHERE name LIKE %s OR email LIKE %s",
+                    ('%' + search + '%', '%' + search + '%'))
     else:
-        return redirect("/")
+        cur.execute("SELECT * FROM users")
+
+    users = cur.fetchall()
+
+    # counts
+    cur.execute("SELECT COUNT(*) FROM users WHERE role='doctor'")
+    doctor_count = cur.fetchone()[0]
+
+    cur.execute("SELECT COUNT(*) FROM users WHERE role='patient'")
+    patient_count = cur.fetchone()[0]
+
+    cur.execute("SELECT COUNT(*) FROM users WHERE role='pharmacist'")
+    pharmacist_count = cur.fetchone()[0]
+
+    cur.execute("SELECT COUNT(*) FROM users WHERE role='receptionist'")
+    reception_count = cur.fetchone()[0]
+
+    cur.close()
+
+    return render_template(
+        'admin.html',
+        users=users,
+        doctor_count=doctor_count,
+        patient_count=patient_count,
+        pharmacist_count=pharmacist_count,
+        reception_count=reception_count
+    )
     
-@app.route("/doctor")
-def doctor_dashboard():
-    if "user" in session and session["role"] == "doctor":
+@app.route('/doctor')
+def doctor():
+    print("logged doctor:",session['user'])
+    if 'user' not in session:
+        return redirect('/')
 
-        cur = mysql.connection.cursor()
+    doctor_email = session['user']
 
-        # Show only this doctor's appointments
-        cur.execute("""
-            SELECT id, patient_email, appointment_date, status
-            FROM appointments
-            WHERE doctor_email = %s
-        """, (session["user"],))
+    cur = mysql.connection.cursor()
 
-        appointments = cur.fetchall()
-        cur.close()
+    # ===== TOTAL PATIENTS =====
+    cur.execute("""
+        SELECT COUNT(*) 
+        FROM requests 
+        WHERE doctor_email=%s AND status='accepted'
+    """, (doctor_email,))
+    total_patients = cur.fetchone()[0]
 
-        return render_template("doctor.html", appointments=appointments)
+    # ===== TOTAL PRESCRIPTIONS =====
+    cur.execute("""
+        SELECT COUNT(*) 
+        FROM prescriptions 
+        WHERE doctor_email=%s
+    """, (doctor_email,))
+    total_prescriptions = cur.fetchone()[0]
 
-    else:
-        return redirect("/")
+    # ===== ALL REQUESTS =====
+    cur.execute("""
+        SELECT * FROM requests 
+        WHERE doctor_email=%s
+    """, (doctor_email,))
+    requests = cur.fetchall()
+
+    # ===== ACCEPTED PATIENTS =====
+    cur.execute("""
+        SELECT patient_email
+        FROM requests
+        WHERE doctor_email=%s AND status='accepted'
+    """, (doctor_email,))
+    accepted_patients = cur.fetchall()
+
+    # ===== PRESCRIPTIONS =====
+    cur.execute("""
+        SELECT * FROM prescriptions 
+        WHERE doctor_email=%s
+    """, (doctor_email,))
+    prescriptions = cur.fetchall()
+
+    cur.close()
+
+    return render_template(
+        'doctor.html',
+        requests=requests,
+        accepted_patients=accepted_patients,
+        prescriptions=prescriptions,
+        total_patients=total_patients,
+        total_prescriptions=total_prescriptions
+    )
+
+@app.route('/accept/<int:id>')
+def accept(id):
+    cur = mysql.connection.cursor()
+
+    cur.execute("UPDATE requests SET status='accepted' WHERE id=%s", (id,))
+    mysql.connection.commit()
+
+    cur.close()
+    return redirect('/doctor')
+
+@app.route('/reject/<int:id>')
+def reject(id):
+    cur = mysql.connection.cursor()
+
+    cur.execute("UPDATE requests SET status='rejected' WHERE id=%s", (id,))
+    mysql.connection.commit()
+
+    cur.close()
+    return redirect('/doctor')
+
+@app.route('/add_prescription', methods=['POST'])
+def add_prescription():
+
+    if 'user' not in session:
+        return redirect('/')
+
+    doctor_email = session['user']
+
+    # GET DATA FROM FORM
+    patient_email = request.form.get('patient_email')
+    medicine = request.form.get('medicine')
+    notes = request.form.get('notes')
+
+    print("FORM DATA:", patient_email, medicine, notes)
+
+    # SAFETY CHECK (IMPORTANT)
+    if not patient_email or not medicine or not notes:
+        print("ERROR: Missing data")
+        return redirect('/doctor')
+
+    cur = mysql.connection.cursor()
+
+    cur.execute("""
+        INSERT INTO prescriptions 
+        (patient_email, doctor_email, medicine, notes)
+        VALUES (%s, %s, %s, %s)
+    """, (patient_email, doctor_email, medicine, notes))
+
+    mysql.connection.commit()
+    cur.close()
+
+    return redirect('/doctor')
 
 @app.route("/patient")
 def patient_dashboard():
@@ -166,6 +270,25 @@ def pharmacist_dashboard():
 
     else:
         return redirect("/")
+    
+@app.route('/dispense/<int:id>')
+def dispense(id):
+
+    if 'user' not in session:
+        return redirect('/')
+
+    cur = mysql.connection.cursor()
+
+    cur.execute("""
+        UPDATE prescriptions
+        SET status = 'dispensed'
+        WHERE id = %s
+    """, (id,))
+
+    mysql.connection.commit()
+    cur.close()
+
+    return redirect('/pharmacist')
 
 @app.route("/add_user", methods=["POST"])
 def add_user():
@@ -222,16 +345,7 @@ def update_status(appointment_id, new_status):
 
     else:
         return redirect("/")
-    
-@app.route("/add_prescription/<int:appointment_id>")
-def add_prescription(appointment_id):
 
-    if "user" in session and session["role"] == "doctor":
-
-        return render_template("add_prescription.html", appointment_id=appointment_id)
-
-    else:
-        return redirect("/")
 
 @app.route("/save_prescription", methods=["POST"])
 def save_prescription():
@@ -348,13 +462,15 @@ def generate_bill(appointment_id, patient_email):
         existing_bill = cur.fetchone()
 
         if not existing_bill:
-            amount = 500
+            amount = 500  # fixed price
+
+            # ✅ INSERT BILL (THIS WAS MISSING)
             cur.execute("""
-    SELECT a.id, a.patient_email, a.doctor_email, a.appointment_date, a.status,
-           b.id as bill_id
-    FROM appointments a
-    LEFT JOIN bills b ON a.id = b.appointment_id
-            """)
+                INSERT INTO bills (appointment_id, patient_email, amount, status)
+                VALUES (%s, %s, %s, %s)
+            """, (appointment_id, patient_email, amount, 'Pending'))
+
+            mysql.connection.commit()
 
         cur.close()
 
@@ -402,7 +518,6 @@ def pay_bill(bill_id):
 
     else:
         return redirect("/")
-
 
 if __name__ == "__main__":
     app.run(debug=True)

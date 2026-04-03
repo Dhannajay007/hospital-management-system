@@ -6,48 +6,57 @@
     <h3 class="mb-3">Receptionist Dashboard 🧾</h3>
 
     <div class="table-responsive">
-        <table class="table table-bordered table-hover">
-            <tr>
-                <th>ID</th>
-                <th>Patient</th>
-                <th>Doctor</th>
-                <th>Date</th>
-                <th>Appointment Status</th>
-                <th>Bill Status</th>
-                <th>Action</th>
-            </tr>
+        <table class="table table-bordered table-hover align-middle">
 
-            {% for a in appointments %}
-            <tr>
-                <td>{{ a[0] }}</td>
-                <td>{{ a[1] }}</td>
-                <td>{{ a[2] }}</td>
-                <td>{{ a[3] }}</td>
-                <td>{{ a[4] }}</td>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Appointment Status</th>
+                    <th>Bill Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
 
-                <td>
-                    {% if a[6] %}
-                        <span class="badge bg-success">{{ a[6] }}</span>
-                    {% else %}
-                        <span class="badge bg-secondary">No Bill</span>
-                    {% endif %}
-                </td>
+            <tbody>
+                {% for a in appointments %}
+                <tr>
+                    <td>{{ a[0] }}</td>
+                    <td>{{ a[1] }}</td>
+                    <td>{{ a[2] }}</td>
+                    <td>{{ a[3] }}</td>
+                    <td>{{ a[4] }}</td>
 
-                <td>
-                    {% if not a[5] %}
-                        <a href="/generate_bill/{{ a[0] }}/{{ a[1] }}"
-                           class="btn btn-sm btn-primary"
-                           onclick="return confirmAction('Generate bill for this appointment?')">
-                           Generate
-                        </a>
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
+                    <!-- ===== BILL STATUS ===== -->
+                    <td>
+                        {% if a[5] is not none %}
+                            <span class="badge bg-success">{{ a[6] }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary">No Bill</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- ===== ACTION BUTTON ===== -->
+                    <td>
+                        {% if a[5] is none %}
+                            <a href="{{ url_for('generate_bill', appointment_id=a[0], patient_email=a[1]) }}"
+                               class="btn btn-sm btn-primary">
+                               Generate
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Done</span>
+                        {% endif %}
+                    </td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+
         </table>
     </div>
+
 </div>
 
 {% endblock %}

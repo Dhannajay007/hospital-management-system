@@ -1,56 +1,111 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block content %}
 
-<div class="card shadow p-4">
-    <h3 class="mb-3">Admin Dashboard 👑</h3>
+<h2 class="mb-4">Admin Dashboard 👑</h2>
 
-    <h5>Add New User</h5>
-    <form method="POST" action="/add_user" class="row g-3">
+<!-- ===== DASHBOARD CARDS ===== -->
+<div class="row mb-4 text-center">
 
-        <div class="col-md-3">
-            <input type="text" name="name" class="form-control" placeholder="Name" required>
+    <div class="col">
+        <div class="card p-2">
+            <small>Total Users</small>
+            <h5>{{ users|length }}</h5>
         </div>
+    </div>
 
-        <div class="col-md-3">
-            <input type="email" name="email" class="form-control" placeholder="Email" required>
+    <div class="col">
+        <div class="card p-2">
+            <small>Doctors</small>
+            <h5>{{ doctor_count }}</h5>
         </div>
+    </div>
 
-        <div class="col-md-3">
-            <input type="password" name="password" class="form-control" placeholder="Password" required>
+    <div class="col">
+        <div class="card p-2">
+            <small>Patients</small>
+            <h5>{{ patient_count }}</h5>
         </div>
+    </div>
 
-        <div class="col-md-2">
-            <select name="role" class="form-select" required>
-                <option value="">Select Role</option>
-                <option value="doctor">Doctor</option>
-                <option value="patient">Patient</option>
-                <option value="receptionist">Receptionist</option>
-                <option value="pharmacist">Pharmacist</option>
-            </select>
+    <div class="col">
+        <div class="card p-2">
+            <small>Pharmacists</small>
+            <h5>{{ pharmacist_count }}</h5>
         </div>
+    </div>
 
-        <div class="col-md-1">
-            <button type="submit" class="btn btn-primary w-100">Add</button>
+    <div class="col">
+        <div class="card p-2">
+            <small>Receptionists</small>
+            <h5>{{ reception_count }}</h5>
         </div>
+    </div>
 
+</div>
+
+
+<!-- ===== ADD USER FORM ===== -->
+<div class="card p-4 mb-4">
+    <h5 class="mb-3">Add New User</h5>
+
+    <form method="POST" action="/admin">
+        <div class="row">
+
+            <div class="col-md-3 mb-2">
+                <input type="text" name="name" class="form-control" placeholder="Name" required>
+            </div>
+
+            <div class="col-md-3 mb-2">
+                <input type="email" name="email" class="form-control" placeholder="Email" required>
+            </div>
+
+            <div class="col-md-3 mb-2">
+                <input type="password" name="password" class="form-control" placeholder="Password" required>
+            </div>
+
+            <div class="col-md-2 mb-2">
+                <select name="role" class="form-control" required>
+                    <option value="">Select Role</option>
+                    <option value="admin">Admin</option>
+                    <option value="doctor">Doctor</option>
+                    <option value="patient">Patient</option>
+                    <option value="receptionist">Receptionist</option>
+                    <option value="pharmacist">Pharmacist</option>
+                </select>
+            </div>
+
+            <div class="col-md-1 mb-2">
+                <button type="submit" class="btn btn-primary w-100">Add</button>
+            </div>
+
+        </div>
     </form>
+</div>
+<!--==== search bar ====-->
+<div class="card p-3 mb-3">
+    <form method="GET" action="/admin">
+        <div class="row">
 
-    <hr>
-    <form method="GET" action="/admin" class="mb-3 d-flex">
+            <div class="col-md-10">
+                <input type="text" name="search" class="form-control"
+                       placeholder="Search by name or email">
+            </div>
 
-    <input type="text"
-           name="search"
-           class="form-control me-2"
-           placeholder="Search by name or email">
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100">Search</button>
+            </div>
 
-    <button class="btn btn-primary">Search</button>
+        </div>
+    </form>
+</div>
 
-</form>
-    <h5>All Users</h5>
+<!-- ===== USER TABLE ===== -->
+<div class="card p-4">
+    <h5 class="mb-3">All Users</h5>
 
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover">
+    <table class="table table-hover table-bordered">
+        <thead>
             <tr>
                 <th>ID</th>
                 <th>Name</th>
@@ -58,27 +113,28 @@
                 <th>Role</th>
                 <th>Action</th>
             </tr>
+        </thead>
 
+        <tbody>
             {% for user in users %}
             <tr>
                 <td>{{ user[0] }}</td>
                 <td>{{ user[1] }}</td>
                 <td>{{ user[2] }}</td>
                 <td>
-                    <span class="badge bg-info">{{ user[4] }}</span>
+                    <span class="badge bg-info text-dark">
+                        {{ user[4] }}
+                    </span>
                 </td>
                 <td>
-                    <a href="/delete_user/{{ user[0] }}"
-                       class="btn btn-sm btn-danger"
-                       onclick="return confirmAction('Delete this user?')">
-                       Delete
+                    <a href="/delete/{{ user[0] }}" class="btn btn-danger btn-sm">
+                        Delete
                     </a>
                 </td>
             </tr>
             {% endfor %}
-        </table>
-    </div>
-
+        </tbody>
+    </table>
 </div>
 
 {% endblock %}
