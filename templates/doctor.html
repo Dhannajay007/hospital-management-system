@@ -32,6 +32,7 @@
             <tr>
                 <th>ID</th>
                 <th>Patient Email</th>
+                <th>Date</th>
                 <th>Status</th>
                 <th>Action</th>
             </tr>
@@ -47,6 +48,7 @@
                         {{ req[3] }}
                     </span>
                 </td>
+                <td>{{ req[4] }} </td>
                 <td>
                     <a href="/accept/{{ req[0] }}" class="btn btn-success btn-sm">Accept</a>
                     <a href="/reject/{{ req[0] }}" class="btn btn-danger btn-sm">Reject</a>

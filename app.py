@@ -114,18 +114,19 @@ def admin():
     
 @app.route('/doctor')
 def doctor():
-    print("logged doctor:",session['user'])
+    # Check login
     if 'user' not in session:
         return redirect('/')
 
     doctor_email = session['user']
+    print("Doctor logged in:", doctor_email)
 
     cur = mysql.connection.cursor()
 
     # ===== TOTAL PATIENTS =====
     cur.execute("""
         SELECT COUNT(*) 
-        FROM requests 
+        FROM appointments 
         WHERE doctor_email=%s AND status='accepted'
     """, (doctor_email,))
     total_patients = cur.fetchone()[0]
@@ -138,12 +139,10 @@ def doctor():
     """, (doctor_email,))
     total_prescriptions = cur.fetchone()[0]
 
-    # ===== ALL REQUESTS =====
-    cur.execute("""
-        SELECT * FROM requests 
-        WHERE doctor_email=%s
-    """, (doctor_email,))
+    # ===== ALL REQUESTS (TEMP FIX: REMOVE FILTER) =====
+    cur.execute("SELECT * FROM requests")
     requests = cur.fetchall()
+    print("Requests data:", requests)
 
     # ===== ACCEPTED PATIENTS =====
     cur.execute("""
@@ -239,16 +238,16 @@ def receptionist_dashboard():
         cur = mysql.connection.cursor()
 
         cur.execute("""
-                    SELECT a.id, a.patient_email, a.doctor_email, a.appointment_date, a.status,
-                    b.id as bill_id, b.status as bill_status
-                    FROM appointments a
-                    LEFT JOIN bills b ON a.id = b.appointment_id
-                    """)
+            SELECT r.id, r.patient_email, r.doctor_email, r.appointment_date, r.status,
+                   b.id as bill_id, b.status as bill_status
+            FROM requests r
+            LEFT JOIN bills b ON r.id = b.appointment_id
+        """)
 
-        appointments = cur.fetchall()
+        requests = cur.fetchall()
         cur.close()
 
-        return render_template("receptionist.html", appointments=appointments)
+        return render_template("receptionist.html", requests=requests)
 
     else:
         return redirect("/")
@@ -293,8 +292,12 @@ def dispense(id):
 @app.route("/add_user", methods=["POST"])
 def add_user():
     if "user" in session and session["role"] == "admin":
+        import re
 
         name = request.form["name"]
+        if not re.match(r"[A-Za-z]+",name):
+            return "Name should contain only alphabets"
+        
         email = request.form["email"]
         password = request.form["password"]
         role = request.form["role"]
@@ -312,19 +315,16 @@ def add_user():
     else:
         return redirect("/")
     
-@app.route("/delete_user/<int:user_id>")
-def delete_user(user_id):
-    if "user" in session and session["role"] == "admin":
+@app.route('/delete_user/<int:id>', methods=['POST'])
+def delete_user(id):
+    cur = mysql.connection.cursor()
+    
+    cur.execute("DELETE FROM users WHERE id = %s", (id,))
+    
+    mysql.connection.commit()
+    cur.close()
 
-        cur = mysql.connection.cursor()
-        cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
-        mysql.connection.commit()
-        cur.close()
-
-        return redirect("/admin")
- 
-    else:
-        return redirect("/")
+    return redirect('/admin')
 
 @app.route("/update_status/<int:appointment_id>/<string:new_status>")
 def update_status(appointment_id, new_status):  
@@ -399,7 +399,7 @@ def book_appointment():
 
         cur = mysql.connection.cursor()
         cur.execute(
-            "INSERT INTO appointments (patient_email, doctor_email, appointment_date) VALUES (%s, %s, %s)",
+            "INSERT INTO requests (patient_email, doctor_email, appointment_date) VALUES (%s, %s, %s)",
             (patient_email, doctor_email, appointment_date)
         )
         mysql.connection.commit()

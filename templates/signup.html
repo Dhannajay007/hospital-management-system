@@ -12,7 +12,7 @@
 
         <form method="POST" action="/signup">
 
-            <input type="text" name="name" class="form-control mb-3" placeholder="Name" required>
+            <input type="text" name="name" class="form-control mb-3" pattern="[A-Z a-z]+" title="Only alphabets allowed" placeholder="Name" required>
 
             <input type="email" name="email" class="form-control mb-3" placeholder="Email" required>
 
