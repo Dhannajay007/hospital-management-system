@@ -1,2 +1,2 @@
-Flask
-mysqlclient
+Flask>=3.0,<4.0
+Flask-MySQLdb>=2.0,<3.0

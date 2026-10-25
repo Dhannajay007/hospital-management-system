@@ -10,7 +10,7 @@
     <div class="col">
         <div class="card p-2">
             <small>Total Users</small>
-            <h5>{{ users|length }}</h5>
+            <h5>{{ total_users }}</h5>
         </div>
     </div>
 
@@ -50,6 +50,7 @@
     <h5 class="mb-3">Add New User</h5>
 
     <form method="POST" action="/add_user">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="row">
 
             <div class="col-md-3 mb-2">
@@ -118,16 +119,17 @@
         <tbody>
             {% for user in users %}
             <tr>
-                <td>{{ user[0] }}</td>
+                <td>{{ loop.index }}</td>
                 <td>{{ user[1] }}</td>
                 <td>{{ user[2] }}</td>
                 <td>
                     <span class="badge bg-info text-dark">
-                        {{ user[4] }}
+                        {{ user[3] }}
                     </span>
                 </td>
                 <td>
                    <form action="/delete_user/{{ user[0] }}" method="POST" style="display:inline;">
+                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                      <button class="btn btn-danger">Delete</button>
                     </form>
                 </td>

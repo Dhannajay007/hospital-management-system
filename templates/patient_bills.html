@@ -21,7 +21,7 @@
             <tbody>
                 {% for b in bills %}
                 <tr>
-                    <td>{{ b[0] }}</td>
+                    <td>{{ loop.index }}</td>
                     <td>{{ b[1] }}</td>
                     <td>₹ {{ b[2] }}</td>
 
@@ -37,10 +37,10 @@
                     <!-- ACTION -->
                     <td>
                         {% if b[3] != "Paid" %}
-                            <a href="/pay_bill/{{ b[0] }}"
-                               class="btn btn-sm btn-success">
-                               Pay
-                            </a>
+                            <form method="POST" action="/pay_bill/{{ b[0] }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="btn btn-sm btn-success" type="submit">Mark Paid (demo)</button>
+                            </form>
                         {% else %}
                             <span class="text-muted">Done</span>
                         {% endif %}

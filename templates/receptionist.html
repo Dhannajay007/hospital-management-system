@@ -41,10 +41,10 @@
                     <!-- ===== ACTION BUTTON ===== -->
                     <td>
                         {% if a[5] is none %}
-                            <a href="{{ url_for('generate_bill', appointment_id=a[0], patient_email=a[1]) }}"
-                               class="btn btn-sm btn-primary">
-                               Generate
-                            </a>
+                            <form method="POST" action="{{ url_for('generate_bill', appointment_id=a[0]) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="btn btn-sm btn-primary" type="submit">Generate</button>
+                            </form>
                         {% else %}
                             <span class="text-muted">Done</span>
                         {% endif %}

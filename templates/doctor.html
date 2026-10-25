@@ -12,7 +12,7 @@
             <small>Total Patients</small>
             <h4>{{ total_patients }}</h4>
         </div>
-    </div>
+    </div> 
 
     <div class="col">
         <div class="card p-3 shadow-sm">
@@ -33,6 +33,7 @@
                 <th>ID</th>
                 <th>Patient Email</th>
                 <th>Date</th>
+                <th>Time</th>
                 <th>Status</th>
                 <th>Action</th>
             </tr>
@@ -41,17 +42,29 @@
         <tbody>
             {% for req in requests %}
             <tr>
-                <td>{{ req[0] }}</td>
+                <td>{{ loop.index }}</td>
                 <td>{{ req[1] }}</td>
                 <td>
                     <span class="badge bg-warning text-dark">
                         {{ req[3] }}
                     </span>
                 </td>
-                <td>{{ req[4] }} </td>
+                <td>{{ req[4] }}</td>
+                <td>{{ req[5] }} </td>
                 <td>
-                    <a href="/accept/{{ req[0] }}" class="btn btn-success btn-sm">Accept</a>
-                    <a href="/reject/{{ req[0] }}" class="btn btn-danger btn-sm">Reject</a>
+                    <form method="POST" action="/accept/{{ req[0] }}" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-success btn-sm" type="submit">Accept</button>
+                    </form>
+                    <form method="POST" action="/reject/{{ req[0] }}" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-danger btn-sm" type="submit">Reject</button>
+                    </form>
+                    <form method="POST" action="/delete_request/{{ req[0] }}" class="d-inline"
+                          onsubmit="return confirm('Delete this request?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-dark btn-sm" type="submit">Delete</button>
+                    </form>
                 </td>
             </tr>
             {% endfor %}
@@ -64,6 +77,7 @@
     <h5 class="mb-3">Add Prescription</h5>
 
     <form method="POST" action="/add_prescription" class="row g-3">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <div class="col-md-3">
             <select name="patient_email" class="form-control" required>
